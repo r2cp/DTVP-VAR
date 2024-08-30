@@ -2,6 +2,8 @@ using Lux, Optimisers, Zygote
 using CairoMakie
 using Printf, Random, Statistics, LinearAlgebra
 
+PLOTSDIR = joinpath(dirname(Base.active_project()), "plots")
+
 rng = Xoshiro()
 Random.seed!(rng, 31415)
 
@@ -225,5 +227,7 @@ hlines!(ax6, γ_ols[2], linestyle=:dash, color=:green)
 
 Legend(fig[3,2], [l1, l2, l3], ["NN-TVC", "DGP (true)", "VAR(1)"], orientation=:horizontal, position=:rb, tellwidth=false)
 
+save(joinpath(PLOTSDIR, "params_comparison.png"), fig)
 fig
+
 
