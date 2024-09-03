@@ -3,7 +3,7 @@
 *By Rodrigo Chang (rrcp@banguat.gob.gt) at Banco de Guatemala* 
 *@r2cp*
 
-Check out the [introductory presentation](https://r2cp.github.io/DTVP-VAR/docs)
+Check out the [introductory presentation](https://r2cp.github.io/DTVP-VAR/)
 
 This is a toy example of a prototype model that combines a Multilayer Perceptron to estimate the time-varying coefficients of a SVAR. 
 

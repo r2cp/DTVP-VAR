@@ -129,8 +129,10 @@ $$
 ## Further tests and improvements
 
 - Perhaps it is not necessary to have time-varying intercepts? 
-
+  - Think about the interpretation in the DGP. 
 - Evaluate its performance as a forecasting model. 
+  - This is my most important goal for now. 
+  - Structural analysis after I check if forecasting can be better than textbook model.  
 
 - Generate SVAR objects: 
   - Comparison of IRF across different periods.  
