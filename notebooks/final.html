@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<script src="intro_files/libs/clipboard/clipboard.min.js"></script>
-<script src="intro_files/libs/quarto-html/tabby.min.js"></script>
-<script src="intro_files/libs/quarto-html/popper.min.js"></script>
-<script src="intro_files/libs/quarto-html/tippy.umd.min.js"></script>
-<link href="intro_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="intro_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="intro_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
-<link href="intro_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<script src="final_files/libs/clipboard/clipboard.min.js"></script>
+<script src="final_files/libs/quarto-html/tabby.min.js"></script>
+<script src="final_files/libs/quarto-html/popper.min.js"></script>
+<script src="final_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="final_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="final_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="final_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
+<link href="final_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.5.39">
 
   <meta name="author" content="Rodrigo Chang Banco de Guatemala">
@@ -16,8 +16,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
-  <link rel="stylesheet" href="intro_files/libs/revealjs/dist/reset.css">
-  <link rel="stylesheet" href="intro_files/libs/revealjs/dist/reveal.css">
+  <link rel="stylesheet" href="final_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="final_files/libs/revealjs/dist/reveal.css">
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -31,11 +31,11 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="intro_files/libs/revealjs/dist/theme/quarto.css">
-  <link href="intro_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
-  <link href="intro_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
-  <link href="intro_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
-  <link href="intro_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <link rel="stylesheet" href="final_files/libs/revealjs/dist/theme/quarto.css">
+  <link href="final_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="final_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="final_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="final_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
   <style type="text/css">
 
   .callout {
@@ -322,9 +322,9 @@
       margin-right: 0; 
     }
   </style>
-  <script src="intro_files/libs/quarto-diagram/mermaid.min.js"></script>
-  <script src="intro_files/libs/quarto-diagram/mermaid-init.js"></script>
-  <link href="intro_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+  <script src="final_files/libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="final_files/libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="final_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -415,18 +415,69 @@ Figure&nbsp;2. Deep TVP-VAR
 <p>for <span class="math inline">\(t=1,\ldots,T\)</span>, i.e.&nbsp;something proportional to a full likelihood.</p>
 <ul>
 <li><p><span class="math inline">\(\theta_C\)</span> represents parameters associated with a Cholesky factorization of <span class="math inline">\(\Sigma_{u,t}\)</span> and <span class="math inline">\(\theta_\beta\)</span> the parameters of the MLP.</p></li>
-<li><p>Using the precision matrix <span class="math inline">\(\Lambda_t = \Sigma_{u,t}^{-1}\)</span>:</p></li>
+<li><p>Using the precision matrix <span class="math inline">\(\Lambda_t = \Sigma_{u,t}^{-1}\)</span> and normalizing:</p></li>
 </ul>
 <p><span class="math display">\[
-\sum_{t=1}^{T-1} -\log(\hat{\Lambda}_{t}) + \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)^\prime \hat{\Lambda}_{t} \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)
+\mathcal{L} = \frac{1}{2T}\,\sum_{t=1}^{T-1} -\log(\hat{\Lambda}_{t}) + \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)^\prime \hat{\Lambda}_{t} \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)
 \]</span></p>
+<!-- New stuff and ideas -->
 </section>
-<section id="plan" class="slide level2">
-<h2>Plan</h2>
+<section id="progress" class="slide level2">
+<h2>Progress</h2>
 <ul>
-<li>Estimate the DTVP-VAR model with some test data.</li>
-<li>Evaluate its performance as a forecasting model.</li>
-<li>Generate some usual SVAR objects: IRF functions are of special interest.</li>
+<li><p>I estimated a working prototype of the DTVP-VAR model with some simulated data and generated a few plots.</p></li>
+<li><p>The simulated data DGP is an <em>VAR(1) bivariate process without common trends</em>.</p>
+<ul>
+<li>It means comparison against standard VAR(1) might be unfair.</li>
+</ul></li>
+</ul>
+</section>
+<section id="training-loss-value" class="slide level2">
+<h2>Training loss value</h2>
+
+<img data-src="../plots/training_loss.png" class="quarto-figure quarto-figure-center r-stretch"><p class="caption">
+Figure&nbsp;3. Training loss function
+</p></section>
+<section id="actual-vs.-predicted-values" class="slide level2">
+<h2>Actual vs.&nbsp;Predicted values</h2>
+
+<img data-src="../plots/actual_predicted.png" class="quarto-figure quarto-figure-center r-stretch"><p class="caption">
+Figure&nbsp;4. Actual vs.&nbsp;predicted (simulated bivariate AR(1) process)
+</p></section>
+<section id="estimated-parameters" class="slide level2">
+<h2>Estimated parameters</h2>
+
+<img data-src="../plots/tvc_params.png" class="quarto-figure quarto-figure-center r-stretch"><p class="caption">
+Figure&nbsp;5. Estimated time-varying parameters and DGP
+</p></section>
+<section id="regularization" class="slide level2">
+<h2>Regularization</h2>
+<ul>
+<li>Estimated time-varying parameters seem too volatile:
+<ul>
+<li>I want to implement <strong>cross-validation</strong> (CV) for calibrating the penalty term: <span class="math display">\[
+\mathcal{L}_{reg} = \mathcal{L} + \lambda\, || \beta_{t} - \beta_{t-1} ||_{2}
+\]</span></li>
+</ul></li>
+<li>Using a time series approach for a given value of <span class="math inline">\(\lambda\)</span>:
+<ul>
+<li>Estimate the model on a given sample.</li>
+<li>Forecast <span class="math inline">\(h\)</span> periods ahead in a pseudo out-of-sample fashion.<br>
+</li>
+<li>Compute error metrics.</li>
+</ul></li>
+<li>Repeat this process for several values of <span class="math inline">\(\lambda\)</span> to minimize the CV error.</li>
+</ul>
+</section>
+<section id="further-tests-and-improvements" class="slide level2">
+<h2>Further tests and improvements</h2>
+<ul>
+<li><p>Perhaps it is not necessary to have time-varying intercepts?</p></li>
+<li><p>Evaluate its performance as a forecasting model.</p></li>
+<li><p>Generate SVAR objects:</p>
+<ul>
+<li>Comparison of IRF across different periods.</li>
+</ul></li>
 </ul>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
@@ -438,19 +489,19 @@ Figure&nbsp;2. Deep TVP-VAR
   </div>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script>
-  <script src="intro_files/libs/revealjs/dist/reveal.js"></script>
+  <script src="final_files/libs/revealjs/dist/reveal.js"></script>
   <!-- reveal.js plugins -->
-  <script src="intro_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  <script src="final_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="final_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="final_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="final_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="final_files/libs/revealjs/plugin/quarto-support/support.js"></script>
   
 
-  <script src="intro_files/libs/revealjs/plugin/notes/notes.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/search/search.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/zoom/zoom.js"></script>
-  <script src="intro_files/libs/revealjs/plugin/math/math.js"></script>
+  <script src="final_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="final_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="final_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="final_files/libs/revealjs/plugin/math/math.js"></script>
   <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
 
   <script>

@@ -36,3 +36,4 @@ docs/site/
 ## Quarto 
 
 notebooks/**/*_files/
+!notebooks/final_files

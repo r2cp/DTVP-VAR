@@ -1,0 +1,136 @@
+---
+title: "SVAR with Time-Varying Coefficients via MLP"
+subtitle: A machine learning application for central bank work
+author: "Rodrigo Chang<br><br>Banco de Guatemala"
+date: September 2024
+engine: julia
+lang: en
+# bibliography: references.bib
+number-sections: false
+execute: 
+  daemon: 7200
+format: 
+    revealjs: 
+        smaller: true
+        scrollable: true
+        toc: false
+        # code-fold: true
+        # fig-dpi: 200
+        echo: false
+        # theme: dark
+    # pptx:
+    #     smaller: true
+    #     toc: true
+    #     echo: false
+    #     fig-dpi: 200
+crossref: 
+    title-delim: "."
+---
+
+## Goal
+
+- Mix nonlinear capabilities of Machine Learning (ML) with standard and more interpretable time series models used in macroeconomics.
+
+  - In particular, we focus on applying a Multilayer Perceptron (MLP) to fitting parameters of a standard linear Structural Vector Autoregressions (SVAR) model.
+
+- Inspiration comes from [Prof. Phillippe Coulombe](https://philippegouletcoulombe.com/)'s idea of a *Macro Neural Network*: 
+
+::: {#fig-diagram-idea fig-align=center}
+```{mermaid}
+flowchart LR
+    A[Time variaton sources S] --> |Neural network G| B(VAR parameters β)
+    B --> C(Macro variables y)
+    D[Lagged values X] --> C
+```
+
+Combining a MLP within a traditional SVAR approach.
+::: 
+
+## The Model 
+
+- The model is described by: 
+$$
+\begin{align}
+y_t & = X_t \beta_t + \epsilon_t \\ 
+\beta_t & = \mathcal{G}\left(S_t\right)
+\end{align}
+$$
+
+- $S_t$ are state variables that determine time-varying parameters $\beta_t$. 
+- $X_t$ are the lagged values of $y_t$.
+- $\mathcal{G}$ is approximated by a Multi-Layer Perceptron.
+
+**Tentative pros and cons**:   
+
+- Time variation sources are shared across equations. 
+- MLP could capture nonlinear behavior. 
+- Approach in development (not yet quite tested). 
+
+
+## General idea 
+
+![Deep TVP-VAR](nn-diagram.png){#fig-nn-diagram fig-align=center}
+
+
+## Loss function 
+
+- As described by Prof. Coulombe, the neural network's loss function could be proportional to the sum of: 
+
+$$
+\log(|\Sigma\left(S_t; \theta_C \right)|) + \left(y_t - X_t\beta_t\left(S_t; \theta_\beta\right)\right)^\prime \Sigma^{-1}\left(S_t; \theta_C \right) \left(y_t - X_t\beta_t\left(S_t; \theta_\beta\right)\right)
+$$ 
+
+for $t=1,\ldots,T$, i.e. something proportional to a full likelihood. 
+
+- $\theta_C$ represents parameters associated with a Cholesky factorization of $\Sigma_{u,t}$ and $\theta_\beta$ the parameters of the MLP. 
+
+- Using the precision matrix $\Lambda_t = \Sigma_{u,t}^{-1}$ and normalizing: 
+ 
+$$
+\mathcal{L} = \frac{1}{2T}\,\sum_{t=1}^{T-1} -\log(\hat{\Lambda}_{t}) + \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)^\prime \hat{\Lambda}_{t} \left(y_t - X_t\hat\beta_t\left(S_t; \theta_\beta\right)\right)
+$$
+
+<!-- New stuff and ideas -->
+## Progress 
+
+- I estimated a working prototype of the DTVP-VAR model with some simulated data and generated a few plots.  
+
+- The simulated data DGP is an *VAR(1) bivariate process without common trends*. 
+  - It means comparison against standard VAR(1) might be unfair. 
+
+
+## Training loss value 
+
+![Training loss function](../plots/training_loss.png){#fig-loss-function fig-align=center}
+
+## Actual vs. Predicted values
+
+![Actual vs. predicted (simulated bivariate AR(1) process)](../plots/actual_predicted.png){#fig-actual-predicted fig-align=center}
+
+## Estimated parameters 
+
+![Estimated time-varying parameters and DGP](../plots/tvc_params.png){#fig-tvc-params fig-align=center}
+
+## Regularization 
+
+- Estimated time-varying parameters seem too volatile: 
+  -  I want to implement **cross-validation** (CV) for calibrating the penalty term:
+  $$
+  \mathcal{L}_{reg} = \mathcal{L} + \lambda\, || \beta_{t} - \beta_{t-1} ||_{2} 
+  $$
+
+- Using a time series approach for a given value of $\lambda$: 
+  - Estimate the model on a given sample. 
+  - Forecast $h$ periods ahead in a pseudo out-of-sample fashion.  
+  - Compute error metrics. 
+- Repeat this process for several values of $\lambda$ to minimize the CV error.
+
+
+## Further tests and improvements
+
+- Perhaps it is not necessary to have time-varying intercepts? 
+
+- Evaluate its performance as a forecasting model. 
+
+- Generate SVAR objects: 
+  - Comparison of IRF across different periods.  
