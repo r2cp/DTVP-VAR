@@ -2,7 +2,7 @@ using Lux, Optimisers, Zygote
 using CairoMakie
 using Printf, Random, Statistics, LinearAlgebra
 
-PLOTSDIR = joinpath(dirname(Base.active_project()), "plots")
+PLOTSDIR = mkpath(joinpath(dirname(Base.active_project()), "plots"))
 
 rng = Xoshiro()
 Random.seed!(rng, 31415)
@@ -12,7 +12,7 @@ Random.seed!(rng, 31415)
 
 ## Generate some artificial data
 T = 100 
-k = 2
+k = 2       # Number of yₜ variables 
 
 # DGP is a VAR(1) process
 z0 = 0.1 * randn(rng, Float32, k)
@@ -55,24 +55,18 @@ Y = y
 γ_ols  = β_ols[1:2]
 A1_ols = reshape(β_ols[3:end], 2, 2)
 
-## Defining the βₜ neural network 
 
-# State vector for the MLP is just Xₜ (same as for the VAR). It could include more
-# factors. Input size is the dimension of Xₜ
-model = Chain(
-    Dense(k => 10, relu), 
-    Dense(10 => 9)
-)
-
-# Adam optimizer
-opt = Adam(0.03f0) 
+## --- Functions for the script --- 
 
 # We define a custom loss function according to the DTVP-SVAR slides objective function. 
-
 # Lux.jl: 
 # The function must take 4 inputs – model, parameters, states and data. The function must
 # return 3 values – loss, updated_state, and any computed statistics (usually an empty NamedTuple)
-function lossnn(model, ps, st, (x, y))
+# λ is the regularization penalty, for now has fixed value. Need to implement CV prediction to calibrate...
+function lossnn(model, ps, st, data; λ=100)
+    # Get the data
+    x, y = first(data), last(data)
+
     # Get the trajectory of βₜ
     β, st_ = model(x, ps, st)
 
@@ -87,8 +81,7 @@ function lossnn(model, ps, st, (x, y))
     loss = zero(eltype(y))
     pen  = zero(eltype(y))
     Φ′   = zero(eltype(y))
-    λ    = 100              # Regularization penalty 
-
+    λ    = 100              
     for t in 1:T 
         # VAR's first lag matrix
         Φ = reshape(ϕ[:, t], k, k)
@@ -108,31 +101,28 @@ function lossnn(model, ps, st, (x, y))
         Φ′ = Φ
 
         # Compute loss function
-        loss += -log(det(Λ)) + (yhat - y[:, t])' * Λ * (yhat - y[:, t]) + λ * pen
+        loss += (-log(det(Λ)) + (yhat - y[:, t])' * Λ * (yhat - y[:, t]) + λ * pen) / 2T
     end
 
     # loss, st_, (; y_pred=yhat)
     loss, st_, (; )
 end
 
-# This is required to evaluate and train the model in Lux. Initializes the weights
-tstate = Training.TrainState(rng, model, opt)
-# tstate = Training.TrainState(rng, model, opt)
-# Compute the loss with current parameters
-l_, _, nt_ = lossnn(model, tstate.parameters, tstate.states, (x, y))
+# Define a training function for the TrainState object that contains the MLP and optimizer
+function train!(tstate::Training.TrainState, data, epochs; λ=100)
 
-## Train the model
-
-# Define a training function
-function train!(tstate::Training.TrainState, data, epochs)
-
+    # Vector for storing training loss
     lossfn = zeros(epochs)
 
+    # Closure with the loss function and penalization hyper-parameter
+    mlploss = (model, ps, st, data) -> lossnn(model, ps, st, data; λ)
+
+    # Train for a number of epochs
     for epoch in 1:epochs
-        # grads, loss, stats, tstate = Training.single_train_step!(...)
-        _, loss, _, tstate = Training.single_train_step!(AutoZygote(), lossnn, data, tstate)
+        # Automatically train a step with all the data
+        _, loss, _, tstate = Training.single_train_step!(AutoZygote(), mlploss, data, tstate)
         
-        # Save the training loss 
+        # Save the training loss and print status
         lossfn[epoch] = loss
         if epoch % 5 == 1 || epoch == epochs
             @printf "Epoch: %3d \t Loss: %.5g \n" epoch loss
@@ -142,22 +132,18 @@ function train!(tstate::Training.TrainState, data, epochs)
     return tstate, lossfn
 end
 
-# Train the model!
-# tstate, lossfn = train!(tstate, (x, y), 25)
-tstate, lossfn = train!(tstate, (x, y), 250)
-
-## Inspect the model 
-
+# Helper to compute ŷ values from the Chain model evaluated at x
+# Needs the Training.TrainState object to evaluate the model
 function getpredvals(model, tstate, x)
     # Compute TVC
     β, st_ = model(x, tstate.parameters, tstate.states)
     γ = β[1:2, :]
     ϕ = β[3:6, :]
-    α = β[7:9, :]
+    α = β[7:9, :]   # Cholesky decomposition parameters (not used here)
 
     # Compute ŷ
-    k, T = size(x)
-    yhat = similar(y)
+    T = size(x, 2)
+    yhat = zeros(eltype(x), k, T)
     for t in 1:T 
         Φ = reshape(ϕ[:, t], 2, 2)
         yhat[:, t] = γ[:, T] + Φ * x[:, t]
@@ -165,6 +151,32 @@ function getpredvals(model, tstate, x)
 
     yhat
 end
+
+
+## Defining the βₜ neural network 
+
+# State vector for the MLP is just Xₜ (same as for the VAR). It could include more
+# factors. Input size is the dimension of Xₜ
+model = Chain(
+    Dense(k => 10, relu), 
+    Dense(10 => 9)
+)
+
+# Adam optimizer
+opt = Adam(0.03f0) 
+
+# This is required to evaluate and train the model in Lux. Initializes the weights
+tstate = Training.TrainState(rng, model, opt)
+
+# Compute the loss with current parameters (initial loss value)
+l_, _, nt_ = lossnn(model, tstate.parameters, tstate.states, (x, y))
+
+## Train the model
+
+# Train the model!
+tstate, lossfn = train!(tstate, (x, y), 200)
+
+## Inspect the model 
 
 # Get predicted values
 yhat = getpredvals(model, tstate, x)
@@ -179,14 +191,18 @@ axislegend(ax1, [l1, l2], ["Actual Data", "Predictions"])
 ax2 = Axis(fig[2, 1]; ylabel=L"y_{2t}")
 l1 = lines!(ax2, y[2, :])
 l2 = lines!(ax2, yhat[2, :])
+
+save(joinpath(PLOTSDIR, "actual_predicted.png"), fig)
 fig
 
 
 ## Loss function 
 
 fig = Figure(size=(950, 650))
-ax = Axis(fig[1, 1]; ylabel="Loss function")
+ax = Axis(fig[1, 1]; ylabel="Loss function", xlabel="Number of epochs")
 lines!(ax, lossfn)
+
+save(joinpath(PLOTSDIR, "training_loss.png"), fig)
 fig
 
 ## Time-varying coefficients
@@ -227,7 +243,7 @@ hlines!(ax6, γ_ols[2], linestyle=:dash, color=:green)
 
 Legend(fig[3,2], [l1, l2, l3], ["NN-TVC", "DGP (true)", "VAR(1)"], orientation=:horizontal, position=:rb, tellwidth=false)
 
-save(joinpath(PLOTSDIR, "params_comparison.png"), fig)
+save(joinpath(PLOTSDIR, "tvc_params.png"), fig)
 fig
 
 
