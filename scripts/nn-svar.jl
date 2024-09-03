@@ -2,7 +2,7 @@ using Lux, Optimisers, Zygote
 using CairoMakie
 using Printf, Random, Statistics, LinearAlgebra
 
-PLOTSDIR = mkpath(joinpath(dirname(Base.active_project()), "plots"))
+PLOTSDIR = mkpath(joinpath(dirname(Base.active_project()), "docs", "plots"))
 
 rng = Xoshiro()
 Random.seed!(rng, 31415)
