@@ -101,15 +101,15 @@ $$
 
 ## Training loss value 
 
-![Training loss function](../plots/training_loss.png){#fig-loss-function fig-align=center}
+![Training loss function](plots/training_loss.png){#fig-loss-function fig-align=center}
 
 ## Actual vs. Predicted values
 
-![Actual vs. predicted (simulated bivariate AR(1) process)](../plots/actual_predicted.png){#fig-actual-predicted fig-align=center}
+![Actual vs. predicted (simulated bivariate AR(1) process)](plots/actual_predicted.png){#fig-actual-predicted fig-align=center}
 
 ## Estimated parameters 
 
-![Estimated time-varying parameters and DGP](../plots/tvc_params.png){#fig-tvc-params fig-align=center}
+![Estimated time-varying parameters and DGP](plots/tvc_params.png){#fig-tvc-params fig-align=center}
 
 ## Regularization 
 

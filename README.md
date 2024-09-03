@@ -20,3 +20,10 @@ I will upload here the following work:
 - `notebooks\intro.qmd`: This is a [Quarto](https://quarto.org/) notebook with my elevator-pitch presentation given on Sept. 2. 
 - `notebooks\final.qmd`: This is the Quarto presentation with my progress at the end of the course. 
 
+For this project, I used Julia. Feel free to try out the project by instantiating it: 
+
+```julia-repl 
+julia> ] 
+(DTVP-VAR) pkg> instantiate
+```
+
