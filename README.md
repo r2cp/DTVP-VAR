@@ -3,6 +3,8 @@
 *By Rodrigo Chang (rrcp@banguat.gob.gt) at Banco de Guatemala* 
 *@r2cp*
 
+Check out the [introductory presentation](https://r2cp.github.io/DTVP-VAR/docs)
+
 This is a toy example of a prototype model that combines a Multilayer Perceptron to estimate the time-varying coefficients of a SVAR. 
 
 This is work-in-progress. Inspiration for this work comes from [Prof. Phillippe Coulombe](https://philippegouletcoulombe.com/)'s idea of a *Macro Neural Network*. 
@@ -24,6 +26,6 @@ For this project, I used Julia. Feel free to try out the project by instantiatin
 
 ```julia-repl 
 julia> ] 
-(DTVP-VAR) pkg> instantiate
+(DTVP-VAR) pkg> 
 ```
 
